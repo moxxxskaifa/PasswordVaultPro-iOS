@@ -10,7 +10,11 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
       - name: Install Gradle
-        run: brew install gradle
+        run:       - name: Install Gradle 8
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.10.2-bin.zip -O /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/gradle
+          echo /tmp/gradle/gradle-8.10.2/bin >> 
       - name: Android Debug
         run: gradle :composeApp:assembleDebug
       - name: iOS Framework
