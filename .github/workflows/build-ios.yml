@@ -18,6 +18,8 @@ jobs:
           java-version: '17'
       
       - uses: gradle/actions/setup-gradle@v3
+      - name: Fix permissions
+        run: chmod +x gradlew composeApp/gradlew
       
       - name: Build Compose Multiplatform Framework
         run: ./gradlew :composeApp:assembleXCFramework
