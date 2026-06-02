@@ -61,7 +61,7 @@ fun MainScreen() {
             Text("Saved", fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(8.dp))
             if (saved.isEmpty()) {
-                Text("No saved passwords", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                Text("No saved passwords", color = MaterialTheme.colorScheme.onMaterialTheme.colorScheme.surfaceVariant, fontSize = 14.sp)
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(saved) { item ->
@@ -69,7 +69,7 @@ fun MainScreen() {
                             Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Column(Modifier.weight(1f)) {
                                     Text(item.label, fontWeight = FontWeight.Medium)
-                                    Text(item.password, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(item.password, fontSize = 12.sp, color = MaterialTheme.colorScheme.onMaterialTheme.colorScheme.surfaceVariant)
                                 }
                                 IconButton(onClick = { copyToClipboard(item.password); haptic.light() }) { Icon(Icons.Default.ContentCopy, "Copy") }
                             }
