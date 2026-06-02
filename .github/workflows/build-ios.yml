@@ -1,67 +1,54 @@
-name: Build iOS IPA
-
+name: Build & Deploy iOS
 on:
   push:
-    branches: [ main ]
     tags: [ 'v*' ]
   workflow_dispatch:
 
 jobs:
-  build-ipa:
+  build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      
       - uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      
-      - uses: gradle/actions/setup-gradle@v3
+        with: { distribution: 'zulu', java-version: '17' }
       - name: Install Gradle
         run: brew install gradle
-      
-      - name: Build Compose Multiplatform Framework
-        run: gradle :composeApp:assembleDebug
-      
-      - name: Setup Xcode project
-        run: |
-          brew install xcodegen 2>/dev/null || true
-          xcodegen generate 2>/dev/null || echo "No xcodegen available, using manual setup"
-      
+      - name: Build XCFramework
+        run: gradle :composeApp:assembleXCFramework
       - name: Import Certificate
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
         run: |
-          CERT_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > $CERT_PATH
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security import $CERT_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
-      
-      - name: Install Provisioning Profile
+          echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/cert.p12
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $RUNNER_TEMP/ci.keychain-db
+          security set-keychain-settings -lut 21600 $RUNNER_TEMP/ci.keychain-db
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $RUNNER_TEMP/ci.keychain-db
+          security import $RUNNER_TEMP/cert.p12 -P "$P12_PASSWORD" -A -k $RUNNER_TEMP/ci.keychain-db
+      - name: Profile
         env:
           BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
         run: |
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
-      
-      - name: Build Archive
+          mkdir -p ~/Library/MobileDevice/Provisioning Profiles
+          echo "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision
+      - name: Archive
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           xcodebuild -project *.xcodeproj -scheme iosApp -configuration Release \
-            -archivePath $RUNNER_TEMP/app.xcarchive -allowProvisioningUpdates archive || \
-          echo "Xcode project build failed - trying manual xcframework approach"
-      
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
+            -archivePath $RUNNER_TEMP/app.xcarchive \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            -allowProvisioningUpdates archive || echo "No xcodeproj"
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/app.xcarchive \
+            -exportPath $RUNNER_TEMP/IPA \
+            -exportOptionsPlist exportOptions.plist \
+            -allowProvisioningUpdates || echo "No archive"
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: PomodoroFocusPro-iOS
-          path: ${{ runner.temp }}/*.ipa
-          if-no-files-found: ignore
+          name: iOS-Build
+          path: ${{ runner.temp }}/**/*.ipa
