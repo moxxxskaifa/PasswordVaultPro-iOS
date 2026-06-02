@@ -18,9 +18,11 @@ jobs:
           java-version: '17'
       
       - uses: gradle/actions/setup-gradle@v3
+      - name: Install Gradle
+        run: brew install gradle
       
       - name: Build Compose Multiplatform Framework
-        run: java -jar gradle/wrapper/gradle-wrapper.jar :composeApp:assembleXCFramework
+        run: gradle :composeApp:assembleDebug
       
       - name: Setup Xcode project
         run: |
