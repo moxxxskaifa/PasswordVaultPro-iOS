@@ -10,9 +10,7 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v3
-      - name: Fix permissions
-        run: chmod +x gradlew
       - name: Compile Android Debug
-        run: ./gradlew :composeApp:assembleDebug
+        run: gradle :composeApp:assembleDebug
       - name: Link iOS Framework
-        run: ./gradlew :composeApp:linkDebugFrameworkIosArm64
+        run: gradle :composeApp:linkDebugFrameworkIosArm64
