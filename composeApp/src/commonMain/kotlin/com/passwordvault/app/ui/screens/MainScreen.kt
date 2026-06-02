@@ -20,6 +20,7 @@ import kotlin.random.Random
 data class SavedPassword(val label: String, val password: String)
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun MainScreen() {
     var saved by remember { mutableStateOf(listOf<SavedPassword>()) }
     var label by remember { mutableStateOf("") }
