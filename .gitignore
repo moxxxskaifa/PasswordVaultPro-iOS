@@ -7,3 +7,7 @@ composeApp/build/
 iosApp/*.xcodeproj/
 iosApp/*.xcworkspace/
 *.ipa
+# Gradle wrapper (must be committed)
+!/gradle/wrapper/
+!/gradlew*
+
