@@ -20,7 +20,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
       
       - name: Build Compose Multiplatform Framework
-        run: gradle :composeApp:assembleXCFramework
+        run: java -jar gradle/wrapper/gradle-wrapper.jar :composeApp:assembleXCFramework
       
       - name: Setup Xcode project
         run: |
