@@ -12,7 +12,7 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_26.0.app 2>/dev/null || sudo xcode-select -s /Applications/Xcode_26.app 2>/dev/null || echo "Xcode 26 not found, using default"
           xcodebuild -version
       - uses: actions/setup-java@v4
-        with: {{ distribution: 'zulu', java-version: '17' }}
+        with: { distribution: 'zulu', java-version: '17' }
 
       - name: Install Gradle 8
         run: |
@@ -68,11 +68,20 @@ jobs:
 
       - name: Archive
         run: |
-          xcodebuild archive             -project "Password Vault.xcodeproj"             -scheme iosApp             -configuration Release             -archivePath $RUNNER_TEMP/app.xcarchive             -allowProvisioningUpdates archive
+          xcodebuild archive \
+            -project "Password Vault.xcodeproj" \
+            -scheme iosApp \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/app.xcarchive \
+            -allowProvisioningUpdates archive
 
       - name: Export IPA
         run: |
-          xcodebuild -exportArchive             -archivePath $RUNNER_TEMP/app.xcarchive             -exportPath $RUNNER_TEMP/IPA             -exportOptionsPlist exportOptions.plist             -allowProvisioningUpdates
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/app.xcarchive \
+            -exportPath $RUNNER_TEMP/IPA \
+            -exportOptionsPlist exportOptions.plist \
+            -allowProvisioningUpdates
 
       - name: Upload to App Store
         env:
