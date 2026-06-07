@@ -55,9 +55,10 @@ jobs:
         run: |
           echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > $RUNNER_TEMP/cert.p12
           security create-keychain -p "$KEYCHAIN_PASSWORD" $RUNNER_TEMP/ci.keychain-db
+          security default-keychain -s $RUNNER_TEMP/ci.keychain-db
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $RUNNER_TEMP/ci.keychain-db
           security import $RUNNER_TEMP/cert.p12 -k $RUNNER_TEMP/ci.keychain-db -P "$P12_PASSWORD" -A -T /usr/bin/codesign -T /usr/bin/xcodebuild
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $RUNNER_TEMP/ci.keychain-db 2>/dev/null || true
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $RUNNER_TEMP/ci.keychain-db
           security list-keychain -d user -s $RUNNER_TEMP/ci.keychain-db
 
       - name: Install Profile
@@ -66,7 +67,6 @@ jobs:
         run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/54bee6da-55df-4b38-96bc-3d554f1624a5.mobileprovision
-          echo "Profile UUID: 54bee6da-55df-4b38-96bc-3d554f1624a5"
 
       - name: Archive
         run: |
